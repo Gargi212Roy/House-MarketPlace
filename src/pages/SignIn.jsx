@@ -11,7 +11,12 @@ function SignIn() {
   });
   const { email, password } = formData;
   const navigate = useNavigate();
-  const onChange = () => {};
+  const onChange = (e) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      [e.target.id]: e.target.value,
+    }));
+  };
   return (
     <>
       <div className="pageContainer">
@@ -42,7 +47,7 @@ function SignIn() {
                 src={visibilityIcon}
                 alt="show password"
                 className="showPassword"
-                onChange={() => setShowPassword((prevState) => !prevState)}
+                onClick={() => setShowPassword((prevState) => !prevState)}
               />
             </div>
             <Link to="/forgot-password" className="forgotPasswordLink">
