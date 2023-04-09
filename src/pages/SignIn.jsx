@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
+// ReactComponent not needed here as it'd be set as a source for an image tag.
 
 function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -64,7 +65,7 @@ function SignIn() {
 
           {/* Google OAuth */}
           <Link to="/sign-up" className="registerLink">
-            Sign up
+            Don't have an account?? Sign up!
           </Link>
         </main>
       </div>

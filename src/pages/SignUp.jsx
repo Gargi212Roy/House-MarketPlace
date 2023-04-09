@@ -1,5 +1,12 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
+import { db } from "../firebase.config";
 import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
 
@@ -18,6 +25,37 @@ function SignUp() {
       [e.target.id]: e.target.value,
     }));
   };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      // getting the auth value
+      const userCredential = await createUserWithEmailAndPassword(
+        // registering
+        auth,
+        email,
+        password
+      );
+      //actual user info---> for the database
+      const user = userCredential.user;
+      updateProfile(auth.currentUser, {
+        displayName: name,
+      });
+      // ---> uid fromt this user
+
+      const formDataCopy = { ...formData };
+      delete formDataCopy.password;
+      formDataCopy.timestamp = serverTimestamp();
+
+      // setdoc returns a promise
+      await setDoc(doc(db, "users", user.uid), formDataCopy);
+
+      navigate("/");
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <>
       <div className="pageContainer">
@@ -25,7 +63,7 @@ function SignUp() {
           <p className="pageHeader">Welcome </p>
         </header>
         <main>
-          <form>
+          <form onSubmit={onSubmit}>
             <input
               type="text"
               className="nameInput"
@@ -74,7 +112,7 @@ function SignUp() {
 
           {/* Google OAuth */}
           <Link to="/sign-in" className="registerLink">
-            Sign In
+            Sign In Instead
           </Link>
         </main>
       </div>
