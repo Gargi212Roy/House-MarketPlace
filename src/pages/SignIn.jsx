@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
 // ReactComponent not needed here as it'd be set as a source for an image tag.
@@ -18,6 +20,25 @@ function SignIn() {
       [e.target.id]: e.target.value,
     }));
   };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      // signInWithEmailAndPassword returns a promise, we'll put that promise ino userCredential
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      if (userCredential.user) {
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error("Bad User Credentials");
+    }
+  };
+
   return (
     <>
       <div className="pageContainer">
@@ -25,7 +46,7 @@ function SignIn() {
           <p className="pageHeader">Welcome Back!!</p>
         </header>
         <main>
-          <form>
+          <form onSubmit={onSubmit}>
             <input
               type="email"
               className="emailInput"
