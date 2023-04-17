@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { ReactComponent as ArrowRightIcon } from "../assets/svg/keyboardArrowRightIcon.svg";
 import visibilityIcon from "../assets/svg/visibilityIcon.svg";
+import OAuth from "../components/OAuth";
 // ReactComponent not needed here as it'd be set as a source for an image tag.
 
 function SignIn() {
@@ -83,8 +84,7 @@ function SignIn() {
               </button>
             </div>
           </form>
-
-          {/* Google OAuth */}
+          <OAuth />
           <Link to="/sign-up" className="registerLink">
             Don't have an account?? Sign up!
           </Link>
