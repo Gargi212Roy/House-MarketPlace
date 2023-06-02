@@ -47,7 +47,7 @@ function Category() {
       }
     };
     fetchListings();
-  }, [params.category]);
+  }, [params.categoryName]);
 
   return (
     <div className="category">

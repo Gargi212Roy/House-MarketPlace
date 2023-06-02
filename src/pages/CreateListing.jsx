@@ -7,6 +7,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase.config";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "react-toastify";
@@ -18,14 +19,14 @@ function CreateListing() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: "rent",
-    name: "",
+    Name: "",
     bedrooms: 1,
     bathrooms: 1,
     parking: false,
     furnished: false,
     address: "",
     offer: false,
-    regularPrice: 0,
+    regular: 0,
     discountedPrice: 0,
     images: {},
     latitude: 0,
@@ -35,14 +36,14 @@ function CreateListing() {
   // destructuring formData
   const {
     type,
-    name,
+    Name,
     bedrooms,
     bathrooms,
     parking,
     furnished,
     address,
     offer,
-    regularPrice,
+    regular,
     discountedPrice,
     images,
     latitude,
@@ -71,7 +72,7 @@ function CreateListing() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    if (discountedPrice >= regularPrice) {
+    if (discountedPrice >= regular) {
       setLoading(false);
       toast.error("Discounted Price should be lesser than regular price");
     }
@@ -80,18 +81,18 @@ function CreateListing() {
       toast.error("Max. of 6 images is permissible");
     }
     let geolocation = {};
-
+    let location;
     if (!geoLocationEnabled) {
       geolocation.lat = latitude;
       geolocation.lng = longitude;
-      console.log("geolocation");
+      location = address;
     }
 
     // storing images in firebase
     const storeImage = async (image) => {
       return new Promise((resolve, reject) => {
         const storage = getStorage();
-        const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
+        const fileName = `${auth.currentUser.uid}-${image.Name}-${uuidv4()}`;
         const storageRef = ref(storage, "images/" + fileName);
         const uploadTask = uploadBytesResumable(storageRef, image);
 
@@ -126,18 +127,32 @@ function CreateListing() {
         );
       });
     };
-    console.log(images);
     // array of image URLs
-    const imgURLs = await Promise.all(
+    const imageURLs = await Promise.all(
       [...images].map((image) => storeImage(image))
     ).catch(() => {
       setLoading(false);
       toast.error("Images Not Uploaded");
-      console.log("hi");
+
       return;
     });
-    console.log(imgURLs);
+
+    const formDataCopy = {
+      ...formData,
+      imageURLs,
+      geolocation,
+      timestamp: serverTimestamp(),
+    };
+
+    formDataCopy.location = address;
+    delete formDataCopy.images;
+    delete formDataCopy.address;
+    !formDataCopy.offer && delete formDataCopy.discountedPrice;
+
+    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
     setLoading(false);
+    toast.success("Listing saved");
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`);
   };
 
   const onMutate = (e) => {
@@ -203,8 +218,8 @@ function CreateListing() {
           <input
             type="text"
             className="formInputName"
-            id="name"
-            value={name}
+            id="Name"
+            value={Name}
             onChange={onMutate}
             maxLength="32"
             minLength="10"
@@ -358,8 +373,8 @@ function CreateListing() {
             <input
               className="formInputSmall"
               type="number"
-              id="regularPrice"
-              value={regularPrice}
+              id="regular"
+              value={regular}
               onChange={onMutate}
               min="50"
               max="75000000"
